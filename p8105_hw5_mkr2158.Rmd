@@ -122,6 +122,15 @@ ggplot(avg_mu, aes(x = mu, y = average, color = mu_hat)) +
 * The red line represents the average estimated mean of all samples, whereas the blue lines representthe average estimate of mean in samples only when the null is rejected. When the true μ is small, the average mean for samples only when null reject tends to be higher than that of the overall sample mean. Generally however, the sample average of μ across the test for which the null is rejected tends to overestimate (be higher) than the true value of μ since we are looking at only sample for which the null is rejected. 
 
 
+## Problem 3
 
+Reading in the raw `homicide` dataset.
+```{r, message = FALSE}
+homicide = 
+  read_csv("data/homicide-data.csv")
+```
+
+* The raw data contains `r nrow(homicide)` observations and `r ncol(homicide)` variables. 
+* The variables for this raw dataset include: `uid`, `reported_date`, `victim_last`, `victim_first`, `victim_race`, `victim_age`, `victim_sex`, `city`, `state`, `lat`, `lon`, and `disposition`.
 
 
