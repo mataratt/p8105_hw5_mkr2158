@@ -134,3 +134,49 @@ homicide =
 * The variables for this raw dataset include: `uid`, `reported_date`, `victim_last`, `victim_first`, `victim_race`, `victim_age`, `victim_sex`, `city`, `state`, `lat`, `lon`, and `disposition`.
 
 
+Creating a city_state variable and summarizing within cities the total number of homicides and the number of unsolved homicides (those for which the disposition is “Closed without arrest” or “Open/No arrest”).
+
+I provided a table showing the first 10 cities in alphabetic order with this summary.
+
+```{r}
+homicide_summary =
+homicide |> 
+  mutate(
+    city_state = str_c(city, ", ", state),
+    unsolved = disposition %in% c("Closed without arrest", "Open/No arrest")
+  ) |> 
+  group_by(city_state) |>
+  summarise(
+    total_homicides   = n(),
+    unsolved_homicides = sum(unsolved)
+  )
+
+  knitr::kable(head(homicide_summary,10))
+```
+
+For the city of Baltimore, MD, use the prop.test function to estimate the proportion of homicides that are unsolved; save the output of prop.test as an R object, apply the broom::tidy to this object and pull the estimated proportion and confidence intervals from the resulting tidy dataframe.
+
+Estimating the proportion and confidence intervals of homicides that are unsolved in Baltimore, MD. 
+
+```{r}
+balt_md = 
+homicide_summary |> 
+  filter(
+    city_state == "Baltimore, MD"
+  ) |> 
+  mutate(
+    proportion = broom::tidy(prop.test(x = unsolved_homicides, n = total_homicides))
+  ) |> 
+  unnest(proportion) |> 
+  select(estimate, conf.low, conf.high)
+```
+
+The estimated proportion of unsolved homicides in Baltimore, MD is `r round(balt_md$estimate, 3)`, with a 95% confidence interval from `r round(balt_md$conf.low, 3)` to `r round(balt_md$conf.high, 3)`
+
+
+
+
+
+
+
+
