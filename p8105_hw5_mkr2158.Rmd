@@ -14,6 +14,21 @@ n        = 30
 sigma    = 5
 mu_value = 0:6
 
+knitr::opts_chunk$set(
+  echo = TRUE,
+  warning = FALSE,
+  fig.width = 6,
+  fig.asp = .6,
+  out.width = "90%"
+)
+
+theme_set(theme_minimal() + theme(legend.position = "bottom"))
+
+options(
+  ggplot2.continuous.colour = "viridis",
+  ggplot2.continuous.fill = "viridis"
+)
+
 ```
 
 ## Question 1
@@ -52,10 +67,59 @@ results_df =
 
 Total number of observations in `results_df` is 35,000. 
 
+Making a plot showing the proportion of times the null was rejected (the power of the test) on the y axis and the true value of μ on the x axis. 
 
+```{r}
+power_df =
+  results_df |>
+  group_by(mu) |>
+  summarize(power = mean(reject))
 
+ggplot(power_df, aes(x = mu, y = power)) +
+  geom_line(linewidth = 1) +
+  geom_point(size = 2) +
+  labs(
+    title = "Power of One-Sample T-Test",
+    x = expression(True~mu),
+    y = "Power"
+  )
+```
 
+* From the graph, we see that as the true μ (mean) is closer to 0, the power is closest to a = 0.05 (level of significance 5%).
+* As the true μ (mean) increases, power, or the proportion of rejecting the null increases as well. Thus, a large true μ translates to a larger effect size which means the one-sample t-test has greater power, reflecting a positive association between effect size and power. 
 
+Making a plot showing the average estimate of μ on the y axis and the true value of μ the x axis.
+The plot also contains an overlay of the average estimate of μ only in samples for which the null was rejected.
+
+```{r}
+avg_mu =
+  results_df |>
+  group_by(mu) |>
+  summarize(
+    mu_hat = mean(estimate),
+    mu_hat_rejected = mean(estimate[reject])
+  ) |>
+  pivot_longer(
+    cols = c(mu_hat, mu_hat_rejected),
+    names_to = "mu_hat",
+    values_to = "average"
+  )
+
+ggplot(avg_mu, aes(x = mu, y = average, color = mu_hat)) +
+  geom_line(linewidth = 1) +
+  geom_point(size = 2) +
+  labs(
+    title = "Average Estimated μ and Rejected μ y True μ",
+    x = expression(True~mu),
+    y = expression(Average~hat(mu)),
+    color = NULL
+  ) +
+  scale_color_discrete(
+    labels = c("All Samples", "Only When Null Rejected")
+  )
+```
+
+* The red line represents the average estimated mean of all samples, whereas the blue lines representthe average estimate of mean in samples only when the null is rejected. When the true μ is small, the average mean for samples only when null reject tends to be higher than that of the overall sample mean. Generally however, the sample average of μ across the test for which the null is rejected tends to overestimate (be higher) than the true value of μ since we are looking at only sample for which the null is rejected. 
 
 
 
