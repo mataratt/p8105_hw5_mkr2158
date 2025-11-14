@@ -75,7 +75,8 @@ power_df =
   group_by(mu) |>
   summarize(power = mean(reject))
 
-ggplot(power_df, aes(x = mu, y = power)) +
+power_df |> 
+  ggplot(aes(x = mu, y = power)) +
   geom_line(linewidth = 1) +
   geom_point(size = 2) +
   labs(
@@ -105,7 +106,8 @@ avg_mu =
     values_to = "average"
   )
 
-ggplot(avg_mu, aes(x = mu, y = average, color = mu_hat)) +
+avg_mu |> 
+  ggplot(aes(x = mu, y = average, color = mu_hat)) +
   geom_line(linewidth = 1) +
   geom_point(size = 2) +
   labs(
@@ -136,7 +138,7 @@ homicide =
 
 Creating a city_state variable and summarizing within cities the total number of homicides and the number of unsolved homicides (those for which the disposition is “Closed without arrest” or “Open/No arrest”).
 
-I provided a table showing the first 10 cities in alphabetic order with this summary.
+I provided an example table showing the first 10 cities in alphabetic order with this summary.
 
 ```{r}
 homicide_summary =
@@ -154,8 +156,6 @@ homicide |>
   knitr::kable(head(homicide_summary,10))
 ```
 
-For the city of Baltimore, MD, use the prop.test function to estimate the proportion of homicides that are unsolved; save the output of prop.test as an R object, apply the broom::tidy to this object and pull the estimated proportion and confidence intervals from the resulting tidy dataframe.
-
 Estimating the proportion and confidence intervals of homicides that are unsolved in Baltimore, MD. 
 
 ```{r}
@@ -165,7 +165,9 @@ homicide_summary |>
     city_state == "Baltimore, MD"
   ) |> 
   mutate(
-    proportion = broom::tidy(prop.test(x = unsolved_homicides, n = total_homicides))
+    proportion = list(broom::tidy
+                      (prop.test(x = unsolved_homicides, n = total_homicides))
+  )
   ) |> 
   unnest(proportion) |> 
   select(estimate, conf.low, conf.high)
@@ -173,7 +175,25 @@ homicide_summary |>
 
 The estimated proportion of unsolved homicides in Baltimore, MD is `r round(balt_md$estimate, 3)`, with a 95% confidence interval from `r round(balt_md$conf.low, 3)` to `r round(balt_md$conf.high, 3)`
 
+Running prop.test for each of the cities in the `homicide` dataset and extracting the proportion of unsolved homicides and the confidence interval for each.
 
+I have provided an example with the first 10 cities in alphabetical order with this summary.
+
+```{r}
+city_proportions =
+  homicide_summary |> 
+  mutate(
+    proportion = map2(
+      unsolved_homicides,
+      total_homicides,
+      ~ broom::tidy(prop.test(.x, .y))
+    )
+  ) |> 
+  unnest(proportion) |> 
+  select(city_state, estimate, conf.low, conf.high)
+
+knitr::kable(head(city_proportions, 10))
+```
 
 
 
