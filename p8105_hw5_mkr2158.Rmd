@@ -195,7 +195,24 @@ city_proportions =
 knitr::kable(head(city_proportions, 10))
 ```
 
+Creating a plot that shows the estimates and confidence intervals for each city.
 
+```{r, fig.width=10, fig.height=8}
+city_proportions |>
+  mutate(
+    city_state = fct_reorder(city_state, estimate)
+  ) |>
+  ggplot(aes(x = estimate, y = city_state)) +
+  geom_point() +
+  geom_errorbar(
+    aes(xmin = conf.low, xmax = conf.high)
+  ) +
+  labs(
+    title = "Estimated Proportion of Unsolved Homicides by City",
+    x = "Proportion of Unsolved Homicides",
+    y = "City"
+  )
+```
 
 
 
